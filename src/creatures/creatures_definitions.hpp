@@ -1376,6 +1376,7 @@ struct IntervalInfo {
 };
 
 struct FindPathParams {
+	uint32_t id { 0 };
 	bool fullPathSearch = true;
 	bool clearSight = true;
 	bool allowDiagonal = true;

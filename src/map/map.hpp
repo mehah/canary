@@ -124,6 +124,8 @@ public:
 
 	const Tile* canWalkTo(const Creature &creature, const Position &pos);
 
+	void getAsyncPathMatching(const Creature &creature, std::forward_list<Direction> &dirList, const FrozenPathingConditionCall &pathCondition, const FindPathParams &fpp, const std::function<void(bool, FindPathParams)> &callback);
+
 	bool getPathMatching(const Creature &creature, std::forward_list<Direction> &dirList, const FrozenPathingConditionCall &pathCondition, const FindPathParams &fpp);
 
 	bool getPathMatching(const Position &startPos, std::forward_list<Direction> &dirList, const FrozenPathingConditionCall &pathCondition, const FindPathParams &fpp);

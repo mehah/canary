@@ -942,7 +942,8 @@ bool Creature::setAttackedCreature(Creature* creature) {
 	return true;
 }
 
-void Creature::getPathSearchParams(const Creature*, FindPathParams &fpp) const {
+void Creature::getPathSearchParams(const Creature* target, FindPathParams &fpp) const {
+	fpp.id = target->getID();
 	fpp.fullPathSearch = !hasFollowPath;
 	fpp.clearSight = true;
 	fpp.maxSearchDist = 12;
@@ -988,12 +989,22 @@ void Creature::goToFollowCreature() {
 			}
 		} else {
 			listWalkDir.clear();
-			if (getPathTo(followCreature->getPosition(), listWalkDir, fpp)) {
-				hasFollowPath = true;
-				startAutoWalk(listWalkDir);
-			} else {
-				hasFollowPath = false;
-			}
+
+			g_game().map.getAsyncPathMatching(*this, listWalkDir, FrozenPathingConditionCall(getPosition()), fpp, [&](bool finded, const FindPathParams &fpp) {
+				if (!followCreature || fpp.id != followCreature->getID()) {
+					return;
+				}
+
+				if (finded) {
+					hasFollowPath = true;
+					startAutoWalk(listWalkDir);
+				} else {
+					hasFollowPath = false;
+				}
+				onFollowCreatureComplete(followCreature);
+			});
+
+			return;
 		}
 	}
 

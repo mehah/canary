@@ -605,6 +605,12 @@ const Tile* Map::canWalkTo(const Creature &creature, const Position &pos) {
 	return tile;
 }
 
+void Map::getAsyncPathMatching(const Creature &creature, std::forward_list<Direction> &dirList, const FrozenPathingConditionCall &pathCondition, const FindPathParams &fpp, const std::function<void(bool, FindPathParams)> &callback) {
+	inject<ThreadPool>().addLoad([&, callback] {
+		callback(getPathMatching(creature, dirList, FrozenPathingConditionCall(creature.getPosition()), fpp), fpp);
+	});
+}
+
 bool Map::getPathMatching(const Creature &creature, std::forward_list<Direction> &dirList, const FrozenPathingConditionCall &pathCondition, const FindPathParams &fpp) {
 	Position pos = creature.getPosition();
 	Position endPos;
