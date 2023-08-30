@@ -17,6 +17,7 @@
 #include "game/zones/zone.hpp"
 #include "io/iomap.hpp"
 #include "io/iomapserialize.hpp"
+#include "spectators.hpp"
 
 void Map::load(const std::string &identifier, const Position &pos) {
 	try {
@@ -271,6 +272,8 @@ bool Map::placeCreature(const Position &centerPos, Creature* creature, bool exte
 
 	Cylinder* toCylinder = tile->queryDestination(index, *creature, &toItem, flags);
 	toCylinder->internalAddThing(creature);
+
+	Spectators::put(creature, true);
 
 	const Position &dest = toCylinder->getPosition();
 	getQTNode(dest.x, dest.y)->addCreature(creature);
