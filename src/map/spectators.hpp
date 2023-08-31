@@ -14,6 +14,16 @@
 class Creature;
 struct Position;
 
+class MultiSpectatorArea {
+public:
+	void find(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
+	std::vector<Creature*> get();
+
+private:
+	std::vector<Creature*> creatures;
+	bool locked = false;
+};
+
 class PositionSpectator {
 public:
 	PositionSpectator(const Position &pos) :

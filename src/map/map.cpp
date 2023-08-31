@@ -295,9 +295,22 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 	SpectatorHashSet spectators;
 	getSpectators(spectators, oldPos, true);
 	getSpectators(spectators, newPos, true);
+	spectators.size();
 
-	const auto &list1 = Spectators::get(oldPos, true);
-	const auto &list2 = Spectators::get(newPos, true);
+	MultiSpectatorArea specs;
+	specs.find(oldPos, true);
+	specs.find(newPos, true);
+
+	const auto &list = specs.get();
+
+	g_logger().info("1 ------------------");
+	for (Creature* spectator : spectators) {
+		g_logger().info(spectator->getName() + " | " + spectator->getPosition().toString());
+	}
+	g_logger().info("2 ------------------");
+	for (Creature* spectator : list) {
+		g_logger().info(spectator->getName() + " | " + spectator->getPosition().toString());
+	}
 
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {

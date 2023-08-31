@@ -11,7 +11,7 @@
 #include "spectators.hpp"
 #include "game/game.hpp"
 
-static phmap::flat_hash_map<Position, std::shared_ptr<PositionSpectator>, Position::Hasher> spectators;
+static phmap::flat_hash_map<Position, std::shared_ptr<PositionSpectator>> spectators;
 
 std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 	uint8_t minRangeZ = z;
@@ -35,6 +35,29 @@ std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 	}
 
 	return std::make_pair(minRangeZ, maxRangeZ);
+}
+
+void MultiSpectatorArea::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+	if (locked) {
+		throw std::runtime_error("Unable to search for spectators, MultiSpectatorArea is closed.");
+	}
+
+	const auto &specs = Spectators::get(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
+	if (creatures.empty()) {
+		creatures = specs;
+	} else {
+		creatures.insert(creatures.end(), specs.begin(), specs.end());
+	}
+}
+
+std::vector<Creature*> MultiSpectatorArea::get() {
+	if (!locked) {
+		locked = true;
+		std::sort(creatures.begin(), creatures.end());
+		creatures.erase(std::unique(creatures.begin(), creatures.end()), creatures.end());
+	}
+
+	return creatures;
 }
 
 std::vector<Creature*> PositionSpectator::get(bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
@@ -118,21 +141,33 @@ std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloo
 		return it->second->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 	}
 
-	const int_fast32_t minY = centerPos.y - MAP_MAX_VIEW_PORT_Y - 1;
-	const int_fast32_t minX = centerPos.x - MAP_MAX_VIEW_PORT_X - 1;
+	const int_fast32_t minY = centerPos.y - MAP_MAX_VIEW_PORT_Y;
+	const int_fast32_t minX = centerPos.x - MAP_MAX_VIEW_PORT_X;
 	const int_fast32_t maxY = centerPos.y + MAP_MAX_VIEW_PORT_Y;
 	const int_fast32_t maxX = centerPos.x + MAP_MAX_VIEW_PORT_X;
 
 	const auto &[minZ, maxZ] = getZMinMaxRange(centerPos.z, true);
 
+	int32_t minoffset = centerPos.getZ() - maxZ;
+	uint16_t x1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (minX + minoffset)));
+	uint16_t y1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (minY + minoffset)));
+
+	int32_t maxoffset = centerPos.getZ() - minZ;
+	uint16_t x2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (maxX + maxoffset)));
+	uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (maxY + maxoffset)));
+
+	int32_t startx1 = x1 - (x1 % FLOOR_SIZE);
+	int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
+	int32_t endx2 = x2 - (x2 % FLOOR_SIZE);
+	int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
+
 	const auto &spec = std::make_shared<PositionSpectator>(centerPos);
 	spectators.emplace(centerPos, spec);
 
-	for (int_fast32_t ny = minY; ++ny <= maxY;) {
-		for (int_fast32_t nx = minX; ++nx <= maxX;) {
-			for (int_fast32_t nz = minZ - 1; ++nz <= maxZ;) {
-				const auto &pos = Position(minX, minY, minZ);
-				if (auto tile = g_game().map.getTile(minX, minY, minZ)) {
+	for (int_fast32_t ny = starty1; ny <= endy2; ++ny) {
+		for (int_fast32_t nx = startx1; nx <= endx2; ++nx) {
+			for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
+				if (auto tile = g_game().map.getTile(nx, ny, nz)) {
 					const auto &creatures = tile->getCreatures();
 					if (!creatures || creatures->empty()) {
 						continue;
