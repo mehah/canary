@@ -21,7 +21,7 @@ public:
 
 private:
 	std::vector<Creature*> creatures;
-	bool locked = false;
+	bool update = false;
 };
 
 class PositionSpectator {

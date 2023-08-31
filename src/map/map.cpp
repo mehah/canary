@@ -303,11 +303,11 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 
 	const auto &list = specs.get();
 
-	g_logger().info("1 ------------------");
+	g_logger().info("1 ------------------" + std::to_string(spectators.size()));
 	for (Creature* spectator : spectators) {
 		g_logger().info(spectator->getName() + " | " + spectator->getPosition().toString());
 	}
-	g_logger().info("2 ------------------");
+	g_logger().info("2 ------------------" + std::to_string(list.size()));
 	for (Creature* spectator : list) {
 		g_logger().info(spectator->getName() + " | " + spectator->getPosition().toString());
 	}

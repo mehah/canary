@@ -38,9 +38,7 @@ std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 }
 
 void MultiSpectatorArea::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
-	if (locked) {
-		throw std::runtime_error("Unable to search for spectators, MultiSpectatorArea is closed.");
-	}
+	update = true;
 
 	const auto &specs = Spectators::get(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 	if (creatures.empty()) {
@@ -51,8 +49,8 @@ void MultiSpectatorArea::find(const Position &centerPos, bool multifloor, bool o
 }
 
 std::vector<Creature*> MultiSpectatorArea::get() {
-	if (!locked) {
-		locked = true;
+	if (update) {
+		update = false;
 		std::sort(creatures.begin(), creatures.end());
 		creatures.erase(std::unique(creatures.begin(), creatures.end()), creatures.end());
 	}
@@ -148,25 +146,13 @@ std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloo
 
 	const auto &[minZ, maxZ] = getZMinMaxRange(centerPos.z, true);
 
-	int32_t minoffset = centerPos.getZ() - maxZ;
-	uint16_t x1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (minX + minoffset)));
-	uint16_t y1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (minY + minoffset)));
-
-	int32_t maxoffset = centerPos.getZ() - minZ;
-	uint16_t x2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (maxX + maxoffset)));
-	uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (maxY + maxoffset)));
-
-	int32_t startx1 = x1 - (x1 % FLOOR_SIZE);
-	int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
-	int32_t endx2 = x2 - (x2 % FLOOR_SIZE);
-	int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
-
 	const auto &spec = std::make_shared<PositionSpectator>(centerPos);
 	spectators.emplace(centerPos, spec);
 
-	for (int_fast32_t ny = starty1; ny <= endy2; ++ny) {
-		for (int_fast32_t nx = startx1; nx <= endx2; ++nx) {
-			for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
+	for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
+		int8_t offset = nz - centerPos.z;
+		for (int_fast32_t ny = minY + offset; ny <= maxY + offset; ++ny) {
+			for (int_fast32_t nx = minX + offset; nx <= maxX + offset; ++nx) {
 				if (auto tile = g_game().map.getTile(nx, ny, nz)) {
 					const auto &creatures = tile->getCreatures();
 					if (!creatures || creatures->empty()) {

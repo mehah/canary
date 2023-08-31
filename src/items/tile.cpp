@@ -1142,7 +1142,7 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 				creatures->erase(it);
 
 				for (auto &spec : positionSpectators) {
-					spec->addCreature(creature);
+					spec->removeCreature(creature);
 				}
 			}
 		}
