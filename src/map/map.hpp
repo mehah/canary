@@ -124,6 +124,10 @@ public:
 
 	std::map<std::string, Position> waypoints;
 
+	QTreeLeafNode* getQTNode(const Position &pos) {
+		return QTreeNode::getLeafStatic<QTreeLeafNode*, QTreeNode*>(&root, pos.x, pos.y);
+	}
+
 	QTreeLeafNode* getQTNode(uint16_t x, uint16_t y) {
 		return QTreeNode::getLeafStatic<QTreeLeafNode*, QTreeNode*>(&root, x, y);
 	}

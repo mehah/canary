@@ -44,6 +44,8 @@ private:
 
 	Floor currentFloor;
 	Floor multiFloor;
+
+	friend class SpectatorsCache;
 };
 
 class SpectatorsCache {

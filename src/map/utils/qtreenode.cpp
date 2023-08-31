@@ -71,24 +71,3 @@ QTreeLeafNode* QTreeNode::getBestLeaf(uint32_t x, uint32_t y, uint32_t level) {
 	return tempLeaf;
 }
 
-void QTreeLeafNode::addCreature(Creature* c) {
-	creature_list.push_back(c);
-
-	if (c->getPlayer()) {
-		player_list.push_back(c);
-	}
-}
-
-void QTreeLeafNode::removeCreature(Creature* c) {
-	auto iter = std::find(creature_list.begin(), creature_list.end(), c);
-	assert(iter != creature_list.end());
-	*iter = creature_list.back();
-	creature_list.pop_back();
-
-	if (c->getPlayer()) {
-		iter = std::find(player_list.begin(), player_list.end(), c);
-		assert(iter != player_list.end());
-		*iter = player_list.back();
-		player_list.pop_back();
-	}
-}

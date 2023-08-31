@@ -19,10 +19,12 @@ class BasicTile;
 class Item;
 class Position;
 class FileStream;
+class Spectators;
 
 using TilePtr = std::unique_ptr<Tile>;
 using BasicItemPtr = std::shared_ptr<BasicItem>;
 using BasicTilePtr = std::shared_ptr<BasicTile>;
+using SpectatorsPtr = std::shared_ptr<Spectators>;
 
 #pragma pack(1)
 struct BasicItem {
@@ -85,32 +87,57 @@ private:
 
 #pragma pack()
 
+struct TileBlock {
+	Tile* getTile() const {
+		return tile.get();
+	}
+
+	BasicTilePtr getBasicTile() const {
+		return basicTile;
+	}
+
+	SpectatorsPtr getSpectators() const {
+		return Spectators;
+	}
+
+private:
+	TilePtr tile;
+	BasicTilePtr basicTile;
+	SpectatorsPtr Spectators;
+};
+
 struct Floor {
 	explicit Floor(uint8_t z) :
 		z(z) {};
 
 	Tile* getTile(uint16_t x, uint16_t y) const {
-		return tiles[x & FLOOR_MASK][y & FLOOR_MASK].first.get();
+		return std::get<0>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]).get();
 	}
 
 	void setTile(uint16_t x, uint16_t y, Tile* tile) {
-		tiles[x & FLOOR_MASK][y & FLOOR_MASK].first.reset(tile);
+		std::get<0>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]).reset(tile);
 	}
 
 	BasicTilePtr getTileCache(uint16_t x, uint16_t y) const {
-		return tiles[x & FLOOR_MASK][y & FLOOR_MASK].second;
+		return std::get<1>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]);
 	}
 
 	void setTileCache(uint16_t x, uint16_t y, const BasicTilePtr &newTile) {
-		tiles[x & FLOOR_MASK][y & FLOOR_MASK].second = newTile;
+		std::get<1>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]) = newTile;
 	}
+
+	const std::unique_ptr<std::vector<SpectatorsPtr>> &getSpectators(uint16_t x, uint16_t y) const {
+		return std::get<2>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]);
+	}
+
+	const std::unique_ptr<std::vector<SpectatorsPtr>> &getOrCreateSpectators(uint16_t x, uint16_t y);
 
 	uint8_t getZ() const {
 		return z;
 	}
 
 private:
-	std::pair<TilePtr, BasicTilePtr> tiles[FLOOR_SIZE][FLOOR_SIZE] = {};
+	std::tuple<TilePtr, BasicTilePtr, std::unique_ptr<std::vector<SpectatorsPtr>>> tiles[FLOOR_SIZE][FLOOR_SIZE] = {};
 	uint8_t z { 0 };
 };
 

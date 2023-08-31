@@ -285,3 +285,12 @@ void BasicItem::readAttr(FileStream &stream) {
 		}
 	}
 }
+
+const std::unique_ptr<std::vector<SpectatorsPtr>> &Floor::getOrCreateSpectators(uint16_t x, uint16_t y) {
+	auto &specs = std::get<2>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]);
+	if (!specs) {
+		specs.reset(new std::vector<SpectatorsPtr>);
+		specs->emplace_back(std::make_shared<Spectators>(Position(x, y, z)));
+	}
+	return specs;
+}

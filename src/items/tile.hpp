@@ -256,9 +256,6 @@ private:
 	void resetTileFlags(const Item* item);
 	bool hasHarmfulField() const;
 	ReturnValue checkNpcCanWalkIntoTile() const;
-	std::vector<std::shared_ptr<Spectators>> spectators;
-
-	friend class SpectatorsCache;
 
 protected:
 	Item* ground = nullptr;

@@ -26,6 +26,30 @@
 StaticTile real_nullptr_tile(0xFFFF, 0xFFFF, 0xFF);
 Tile &Tile::nullptr_tile = real_nullptr_tile;
 
+std::vector<SpectatorsPtr> getSpectators(const Position &pos) {
+	const auto leaf = g_game().map.getQTNode(pos.x, pos.y);
+	if (!leaf) {
+		return {};
+	}
+
+	const auto &floor = leaf->getFloor(pos.z);
+	if (!floor) {
+		return {};
+	}
+
+	const auto &spec = floor->getSpectators(pos.x, pos.y);
+	if (!spec) {
+		return {};
+	}
+
+	const auto &specs = spec->getSpectators();
+	if (spec->getSpectators().empty()) {
+		SpectatorsCache::get(pos); // Create Spectators
+	}
+
+	return spec->getSpectators();
+}
+
 bool Tile::hasProperty(ItemProperty prop) const {
 	if (ground && ground->hasProperty(prop)) {
 		return true;
@@ -934,7 +958,7 @@ void Tile::addThing(int32_t, Thing* thing) {
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
 
-		for (auto &spec : spectators) {
+		for (auto &spec : getSpectators(getPosition())) {
 			spec->addCreature(creature);
 		}
 	} else {
@@ -1137,7 +1161,7 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 			if (it != creatures->end()) {
 				creatures->erase(it);
 
-				for (auto &spec : spectators) {
+				for (auto &spec : getSpectators(getPosition())) {
 					spec->removeCreature(creature);
 				}
 			}
@@ -1217,7 +1241,6 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 }
 
 void Tile::removeCreature(Creature* creature) {
-	g_game().map.getQTNode(tilePos.x, tilePos.y)->removeCreature(creature);
 	removeThing(creature, 0);
 }
 
@@ -1542,7 +1565,7 @@ void Tile::internalAddThing(uint32_t, Thing* thing) {
 	if (creature) {
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
-		for (auto &spec : spectators) {
+		for (auto &spec : getSpectators(getPosition())) {
 			spec->addCreature(creature);
 		}
 	} else {

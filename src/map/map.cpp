@@ -273,8 +273,6 @@ bool Map::placeCreature(const Position &centerPos, Creature* creature, bool exte
 	Cylinder* toCylinder = tile->queryDestination(index, *creature, &toItem, flags);
 	toCylinder->internalAddThing(creature);
 
-	const Position &dest = toCylinder->getPosition();
-	getQTNode(dest.x, dest.y)->addCreature(creature);
 	return true;
 }
 
@@ -283,6 +281,8 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 
 	Position oldPos = oldTile.getPosition();
 	Position newPos = newTile.getPosition();
+
+	const auto teste = getTile(oldPos);
 
 	auto fromZones = oldTile.getZones();
 	auto toZones = newTile.getZones();

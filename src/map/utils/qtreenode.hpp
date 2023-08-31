@@ -76,18 +76,12 @@ public:
 		return array[z];
 	}
 
-	void addCreature(Creature* c);
-	void removeCreature(Creature* c);
-
 private:
 	static bool newLeaf;
 	QTreeLeafNode* leafS = nullptr;
 	QTreeLeafNode* leafE = nullptr;
 
 	std::unique_ptr<Floor> array[MAP_MAX_LAYERS] = {};
-
-	std::vector<Creature*> creature_list;
-	std::vector<Creature*> player_list;
 
 	friend class Map;
 	friend class MapCache;
