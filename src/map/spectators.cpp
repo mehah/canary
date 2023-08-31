@@ -37,6 +37,11 @@ std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 	return std::make_pair(minRangeZ, maxRangeZ);
 }
 
+void Spectators::clear() {
+	spectatorCache.clear();
+	playersSpectatorCache.clear();
+}
+
 std::vector<Creature*> Spectators::get() {
 	if (update) {
 		update = false;
@@ -52,7 +57,6 @@ std::vector<Creature*> get(const Position& centerPos, bool multifloor, bool only
 }
 
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
-
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache; 
 
 	if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
