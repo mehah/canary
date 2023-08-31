@@ -10,9 +10,9 @@
 #pragma once
 
 #include "pch.hpp"
-#include "game/movement/position.hpp"
 
 class Creature;
+struct Position;
 
 class PositionSpectator {
 public:
@@ -34,14 +34,11 @@ private:
 
 	Floor currentFloor;
 	Floor multiFloor;
-
-	friend class Spectators;
 };
 
 class Spectators {
 public:
 	static std::vector<Creature*> get(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
-	static void put(Creature* creature, bool allTiles = false);
 
 private:
 };

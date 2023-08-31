@@ -146,6 +146,7 @@ std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloo
 				}
 			}
 		}
-
-		return spec->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 	}
+
+	return spec->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
+}

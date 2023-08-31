@@ -273,8 +273,6 @@ bool Map::placeCreature(const Position &centerPos, Creature* creature, bool exte
 	Cylinder* toCylinder = tile->queryDestination(index, *creature, &toItem, flags);
 	toCylinder->internalAddThing(creature);
 
-	Spectators::put(creature, true);
-
 	const Position &dest = toCylinder->getPosition();
 	getQTNode(dest.x, dest.y)->addCreature(creature);
 	return true;
