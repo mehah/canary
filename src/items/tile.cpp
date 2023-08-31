@@ -21,6 +21,7 @@
 #include "items/trashholder.hpp"
 #include "map/house/housetile.hpp"
 #include "io/iomap.hpp"
+#include "map/spectators.hpp"
 
 StaticTile real_nullptr_tile(0xFFFF, 0xFFFF, 0xFF);
 Tile &Tile::nullptr_tile = real_nullptr_tile;
@@ -539,7 +540,6 @@ ReturnValue Tile::queryAdd(int32_t, const Thing &thing, uint32_t, uint32_t tileF
 	}
 
 	if (const Creature* creature = thing.getCreature()) {
-
 		if (creature->getNpc()) {
 			ReturnValue returnValue = checkNpcCanWalkIntoTile();
 			if (returnValue != RETURNVALUE_NOERROR) {
@@ -936,6 +936,10 @@ void Tile::addThing(int32_t, Thing* thing) {
 		creature->setParent(this);
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
+
+		for (auto &spec : positionSpectators) {
+			spec->addCreature(creature);
+		}
 	} else {
 		Item* item = thing->getItem();
 		if (item == nullptr) {
@@ -1136,6 +1140,10 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 			if (it != creatures->end()) {
 				g_game().map.clearSpectatorCache();
 				creatures->erase(it);
+
+				for (auto &spec : positionSpectators) {
+					spec->addCreature(creature);
+				}
 			}
 		}
 		return;
@@ -1544,6 +1552,9 @@ void Tile::internalAddThing(uint32_t, Thing* thing) {
 		g_game().map.clearSpectatorCache();
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
+		for (auto &spec : positionSpectators) {
+			spec->addCreature(creature);
+		}
 	} else {
 		Item* item = thing->getItem();
 		if (item == nullptr) {
