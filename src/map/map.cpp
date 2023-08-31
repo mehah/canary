@@ -17,6 +17,7 @@
 #include "game/zones/zone.hpp"
 #include "io/iomap.hpp"
 #include "io/iomapserialize.hpp"
+#include "spectators.hpp"
 
 void Map::load(const std::string &identifier, const Position &pos) {
 	try {
@@ -291,9 +292,13 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 
 	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
 
-	SpectatorHashSet spectators;
-	getSpectators(spectators, oldPos, true);
-	getSpectators(spectators, newPos, true);
+	const auto& spectators = Spectators()
+		.find(oldPos, true)
+		.find(newPos, true).get(); 
+
+	SpectatorHashSet test34;
+	getSpectators(test34, oldPos, true);
+	getSpectators(test34, newPos, true);
 
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {
