@@ -50,6 +50,8 @@ private:
 
 	std::vector<SpectatorsPtr> watchmen;
 
+	bool loaded = false;
+
 	friend class SpectatorsCache;
 };
 

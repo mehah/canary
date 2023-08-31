@@ -142,8 +142,8 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 		return {};
 	}
 
-	if (const auto &spec = floor->getSpectators(centerPos.x, centerPos.x)) {
-		if (spec->position == centerPos) {
+	if (const auto &spec = floor->getSpectators(centerPos.x, centerPos.y)) {
+		if (spec->loaded) {
 			return spec->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 		}
 	}
@@ -156,6 +156,7 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 	const auto &[minZ, maxZ] = getZMinMaxRange(centerPos.z, true);
 	const auto &spec = floor->getOrCreateSpectators(centerPos.x, centerPos.y);
 	spec->position = centerPos;
+	spec->loaded = true;
 
 	for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
 		int8_t offset = nz - centerPos.z;
@@ -179,7 +180,8 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 						continue;
 					}
 
-					for (const auto creature : *tile->getCreatures()) {
+					for (const auto creature : *creatures) {
+						g_logger().info(centerPos.toString() + " - " + Position(nx, ny, nz).toString() + " = " + creature->getName());
 						spec->addCreature(creature);
 					}
 
@@ -187,7 +189,7 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 				}
 
 				if (watching) {
-					specFloor->getOrCreateSpectators(0, 0)->watchmen.emplace_back(spec);
+					specFloor->getOrCreateSpectators(centerPos.x, centerPos.y)->watchmen.emplace_back(spec);
 				}
 			}
 		}
