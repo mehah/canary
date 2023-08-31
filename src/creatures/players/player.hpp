@@ -2260,7 +2260,7 @@ public:
 		SpeakClasses type,
 		const std::string &text,
 		bool ghostMode,
-		SpectatorHashSet* spectatorsPtr = nullptr,
+		CreatureVector* spectatorsPtr = nullptr,
 		const Position* pos = nullptr
 	);
 

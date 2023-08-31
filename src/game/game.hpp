@@ -199,7 +199,7 @@ public:
 
 	bool internalCreatureTurn(Creature* creature, Direction dir);
 
-	bool internalCreatureSay(Creature* creature, SpeakClasses type, const std::string &text, bool ghostMode, SpectatorHashSet* spectatorsPtr = nullptr, const Position* pos = nullptr);
+	bool internalCreatureSay(Creature* creature, SpeakClasses type, const std::string &text, bool ghostMode, CreatureVector* spectatorsPtr = nullptr, const Position* pos = nullptr);
 
 	ObjectCategory_t getObjectCategory(const Item* item);
 
@@ -413,7 +413,7 @@ public:
 
 	// Hazard combat helpers
 	void handleHazardSystemAttack(CombatDamage &damage, Player* player, const Monster* monster, bool isPlayerAttacker);
-	void notifySpectators(const SpectatorHashSet &spectators, const Position &targetPos, Player* attackerPlayer, Monster* targetMonster);
+	void notifySpectators(const CreatureVector &spectators, const Position &targetPos, Player* attackerPlayer, Monster* targetMonster);
 
 	// Wheel of destiny combat helpers
 	void applyWheelOfDestinyHealing(CombatDamage &damage, Player* attackerPlayer, const Creature* target);
@@ -435,15 +435,15 @@ public:
 
 	// Animation help functions
 	void addCreatureHealth(const Creature* target);
-	static void addCreatureHealth(const SpectatorHashSet &spectators, const Creature* target);
+	static void addCreatureHealth(const CreatureVector &spectators, const Creature* target);
 	void addPlayerMana(const Player* target);
 	void addPlayerVocation(const Player* target);
 	void addMagicEffect(const Position &pos, uint16_t effect);
-	static void addMagicEffect(const SpectatorHashSet &spectators, const Position &pos, uint16_t effect);
+	static void addMagicEffect(const CreatureVector &spectators, const Position &pos, uint16_t effect);
 	void removeMagicEffect(const Position &pos, uint16_t effect);
-	static void removeMagicEffect(const SpectatorHashSet &spectators, const Position &pos, uint16_t effect);
+	static void removeMagicEffect(const CreatureVector &spectators, const Position &pos, uint16_t effect);
 	void addDistanceEffect(const Position &fromPos, const Position &toPos, uint16_t effect);
-	static void addDistanceEffect(const SpectatorHashSet &spectators, const Position &fromPos, const Position &toPos, uint16_t effect);
+	static void addDistanceEffect(const CreatureVector &spectators, const Position &fromPos, const Position &toPos, uint16_t effect);
 
 	int32_t getLightHour() const {
 		return lightHour;
@@ -818,20 +818,20 @@ private:
 	void sendDamageMessageAndEffects(
 		const Creature* attacker, Creature* target, const CombatDamage &damage, const Position &targetPos,
 		Player* attackerPlayer, Player* targetPlayer, TextMessage &message,
-		const SpectatorHashSet &spectators, int32_t realDamage
+		const CreatureVector &spectators, int32_t realDamage
 	);
 
 	void updatePlayerPartyHuntAnalyzer(const CombatDamage &damage, const Player* player) const;
 
 	void sendEffects(
 		Creature* target, const CombatDamage &damage, const Position &targetPos,
-		TextMessage &message, const SpectatorHashSet &spectators
+		TextMessage &message, const CreatureVector &spectators
 	);
 
 	void sendMessages(
 		const Creature* attacker, const Creature* target, const CombatDamage &damage,
 		const Position &targetPos, Player* attackerPlayer, Player* targetPlayer,
-		TextMessage &message, const SpectatorHashSet &spectators, int32_t realDamage
+		TextMessage &message, const CreatureVector &spectators, int32_t realDamage
 	) const;
 
 	bool shouldSendMessage(const TextMessage &message) const;

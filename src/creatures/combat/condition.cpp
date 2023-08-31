@@ -13,6 +13,7 @@
 #include "game/game.hpp"
 #include "game/scheduling/dispatcher.hpp"
 #include "io/fileloader.hpp"
+#include <map/spectators.hpp>
 
 /**
  *  Condition
@@ -1190,14 +1191,14 @@ bool ConditionRegeneration::executeCondition(Creature* creature, int32_t interva
 					message.primary.color = TEXTCOLOR_PASTELRED;
 					player->sendTextMessage(message);
 
-					SpectatorHashSet spectators;
-					g_game().map.getSpectators(spectators, player->getPosition(), false, true);
-					spectators.erase(player);
-					if (!spectators.empty()) {
+					const auto &spectators = SpectatorsCache::get(player->getPosition(), false, true);
+					if (spectators.size() > 1) {
 						message.type = MESSAGE_HEALED_OTHERS;
 						message.text = player->getName() + " was healed for " + healString;
 						for (Creature* spectator : spectators) {
-							spectator->getPlayer()->sendTextMessage(message);
+							if (spectator != player) {
+								spectator->getPlayer()->sendTextMessage(message);
+							}
 						}
 					}
 				}

@@ -27,6 +27,7 @@
 #include "lua/creature/events.hpp"
 #include "lua/callbacks/event_callback.hpp"
 #include "lua/callbacks/events_callbacks.hpp"
+#include <map/spectators.hpp>
 
 // Game
 int GameFunctions::luaGameCreateMonsterType(lua_State* L) {
@@ -69,9 +70,7 @@ int GameFunctions::luaGameGetSpectators(lua_State* L) {
 	int32_t minRangeY = getNumber<int32_t>(L, 6, 0);
 	int32_t maxRangeY = getNumber<int32_t>(L, 7, 0);
 
-	SpectatorHashSet spectators;
-	g_game().map.getSpectators(spectators, position, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
-
+	const auto &spectators = SpectatorsCache::get(position, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 	lua_createtable(L, spectators.size(), 0);
 
 	int index = 0;
@@ -411,8 +410,7 @@ int GameFunctions::luaGameCreateMonster(lua_State* L) {
 		g_callbacks().executeCallback(EventCallback_t::monsterOnSpawn, &EventCallback::monsterOnSpawn, monster, position);
 		auto mtype = monster->getMonsterType();
 		if (mtype && mtype->info.raceid > 0 && mtype->info.bosstiaryRace == BosstiaryRarity_t::RARITY_ARCHFOE) {
-			SpectatorHashSet spectators;
-			g_game().map.getSpectators(spectators, monster->getPosition(), true);
+			const auto &spectators = SpectatorsCache::get(monster->getPosition(), true);
 			for (Creature* spectator : spectators) {
 				if (Player* tmpPlayer = spectator->getPlayer()) {
 					auto bossesOnTracker = g_ioBosstiary().getBosstiaryCooldownRaceId(tmpPlayer);

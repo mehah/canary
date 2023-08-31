@@ -16,6 +16,7 @@
 #include "creatures/monsters/monster.hpp"
 #include "game/scheduling/scheduler.hpp"
 #include "game/zones/zone.hpp"
+#include <map/spectators.hpp>
 
 double Creature::speedA = 857.36;
 double Creature::speedB = 261.29;
@@ -1181,8 +1182,7 @@ void Creature::onGainExperience(uint64_t gainExp, Creature* target) {
 	master->onGainExperience(gainExp, target);
 
 	if (!m->isFamiliar()) {
-		SpectatorHashSet spectators;
-		g_game().map.getSpectators(spectators, position, false, true);
+		const auto &spectators = SpectatorsCache::get(position, false, true);
 		if (spectators.empty()) {
 			return;
 		}
@@ -1784,9 +1784,7 @@ void Creature::setIcon(CreatureIcon icon) {
 		return;
 	}
 
-	SpectatorHashSet spectators;
-	g_game().map.getSpectators(spectators, tile->getPosition(), true);
-	for (Creature* spectator : spectators) {
+	for (Creature* spectator : SpectatorsCache::get(tile->getPosition(), true)) {
 		if (!spectator) {
 			continue;
 		}

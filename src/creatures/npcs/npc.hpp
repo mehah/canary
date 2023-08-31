@@ -190,7 +190,7 @@ private:
 
 	bool ignoreHeight;
 
-	SpectatorHashSet playerSpectators;
+	CreatureVector playerSpectators;
 	Position masterPos;
 
 	friend class LuaScriptInterface;

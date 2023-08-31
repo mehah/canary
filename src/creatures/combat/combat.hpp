@@ -356,7 +356,7 @@ private:
 	static void CombatDispelFunc(Creature* caster, Creature* target, const CombatParams &params, CombatDamage* data);
 	static void CombatNullFunc(Creature* caster, Creature* target, const CombatParams &params, CombatDamage* data);
 
-	static void combatTileEffects(const SpectatorHashSet &spectators, Creature* caster, Tile* tile, const CombatParams &params);
+	static void combatTileEffects(const CreatureVector &spectators, Creature* caster, Tile* tile, const CombatParams &params);
 
 	/**
 	 * @brief Calculate the level formula for combat.

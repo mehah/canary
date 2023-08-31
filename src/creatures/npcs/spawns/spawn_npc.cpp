@@ -17,6 +17,7 @@
 #include "lua/callbacks/event_callback.hpp"
 #include "lua/callbacks/events_callbacks.hpp"
 #include "utils/pugicast.hpp"
+#include <map/spectators.hpp>
 
 static constexpr int32_t MINSPAWN_INTERVAL = 1000; // 1 second
 static constexpr int32_t MAXSPAWN_INTERVAL = 86400000; // 1 day
@@ -144,9 +145,7 @@ SpawnNpc::~SpawnNpc() {
 }
 
 bool SpawnNpc::findPlayer(const Position &pos) {
-	SpectatorHashSet spectators;
-	g_game().map.getSpectators(spectators, pos, false, true);
-	for (Creature* spectator : spectators) {
+	for (Creature* spectator : SpectatorsCache::get(pos, false, true)) {
 		if (!spectator->getPlayer()->hasFlag(PlayerFlags_t::IgnoredByNpcs)) {
 			return true;
 		}

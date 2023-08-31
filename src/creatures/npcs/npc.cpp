@@ -16,6 +16,7 @@
 #include "lua/callbacks/creaturecallback.hpp"
 #include "game/scheduling/dispatcher.hpp"
 #include "game/scheduling/scheduler.hpp"
+#include <map/spectators.hpp>
 
 int32_t Npc::despawnRange;
 int32_t Npc::despawnRadius;
@@ -148,18 +149,21 @@ void Npc::manageIdle() {
 }
 
 void Npc::onPlayerAppear(Player* player) {
-	if (player->hasFlag(PlayerFlags_t::IgnoredByNpcs) || playerSpectators.contains(player)) {
+	if (player->hasFlag(PlayerFlags_t::IgnoredByNpcs) || std::find(playerSpectators.begin(), playerSpectators.end(), player) != playerSpectators.end()) {
 		return;
 	}
-	playerSpectators.insert(player);
+	playerSpectators.emplace_back(player);
 	manageIdle();
 }
 
 void Npc::onPlayerDisappear(Player* player) {
 	removePlayerInteraction(player);
-	if (!player->hasFlag(PlayerFlags_t::IgnoredByNpcs) && playerSpectators.contains(player)) {
-		playerSpectators.erase(player);
-		manageIdle();
+	if (!player->hasFlag(PlayerFlags_t::IgnoredByNpcs)) {
+		const auto it = std::find(playerSpectators.begin(), playerSpectators.end(), player);
+		if (it != playerSpectators.end()) {
+			playerSpectators.erase(it);
+			manageIdle();
+		}
 	}
 }
 
@@ -527,7 +531,7 @@ void Npc::onThinkWalk(uint32_t interval) {
 
 void Npc::onCreatureWalk() {
 	Creature::onCreatureWalk();
-	phmap::erase_if(playerSpectators, [this](const auto &creature) { return !this->canSee(creature->getPosition()); });
+	std::erase_if(playerSpectators, [this](const auto &creature) { return !this->canSee(creature->getPosition()); });
 }
 
 void Npc::onPlacedCreature() {
@@ -535,11 +539,9 @@ void Npc::onPlacedCreature() {
 }
 
 void Npc::loadPlayerSpectators() {
-	SpectatorHashSet spec;
-	g_game().map.getSpectators(spec, position, true, true);
-	for (auto creature : spec) {
+	for (auto creature : SpectatorsCache::get(position, true, true)) {
 		if (creature->getPlayer() || creature->getPlayer()->hasFlag(PlayerFlags_t::IgnoredByNpcs)) {
-			playerSpectators.insert(creature);
+			playerSpectators.emplace_back(creature);
 		}
 	}
 }
