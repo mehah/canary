@@ -292,9 +292,10 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 
 	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
 
-	const auto& spectators = Spectators()
-		.find(oldPos, true)
-		.find(newPos, true).get(); 
+	const auto &spectators = Spectators()
+								 .find(oldPos, true)
+								 .find(newPos, true)
+								 .get();
 
 	SpectatorHashSet test34;
 	getSpectators(test34, oldPos, true);
