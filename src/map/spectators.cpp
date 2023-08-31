@@ -10,7 +10,7 @@
 #include "spectators.hpp"
 #include "game/game.hpp"
 
-phmap::flat_hash_map < Position, std::pair<CreatureVector, CreatureVector>> spectatorCache;
+phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> spectatorCache;
 phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> playersSpectatorCache;
 
 std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
@@ -47,27 +47,28 @@ std::vector<Creature*> Spectators::get() {
 	return creatures;
 }
 
-std::vector<Creature*> get(const Position& centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+std::vector<Creature*> get(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	return Spectators().find(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY).get();
 }
 
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 
-	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache; 
+	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
 	if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
-			auto it = hashmap.find(centerPos);
-			if (it != hashmap.end()) {
+		auto it = hashmap.find(centerPos);
+		if (it != hashmap.end()) {
 			const auto &list = multifloor ? it->second.first : it->second.second;
 			creatures.insert(creatures.end(), list.begin(), list.end());
-				return *this;
-			}
+			return *this;
+		}
 	}
 
 	const auto &[minRangeZ, maxRangeZ] = getZMinMaxRange(centerPos.z, multifloor);
 
-	if (!creatures.empty())
+	if (!creatures.empty()) {
 		update = true;
+	}
 
 	minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
 	maxRangeX = (maxRangeX == 0 ? MAP_MAX_VIEW_PORT_X : maxRangeX);
@@ -130,7 +131,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 		}
 	}
 
-	 creatures.insert(creatures.end(), list.begin(), list.end());
+	creatures.insert(creatures.end(), list.begin(), list.end());
 
 	return *this;
 }
