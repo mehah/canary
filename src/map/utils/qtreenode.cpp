@@ -70,4 +70,3 @@ QTreeLeafNode* QTreeNode::getBestLeaf(uint32_t x, uint32_t y, uint32_t level) {
 
 	return tempLeaf;
 }
-
