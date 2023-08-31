@@ -296,6 +296,9 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 	getSpectators(spectators, oldPos, true);
 	getSpectators(spectators, newPos, true);
 
+	const auto &list1 = Spectators::get(oldPos, true);
+	const auto &list2 = Spectators::get(newPos, true);
+
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {
 		if (Player* tmpPlayer = spectator->getPlayer()) {

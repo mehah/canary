@@ -9,7 +9,7 @@
 
 #include "pch.hpp"
 #include "spectators.hpp"
-#include "game/game.cpp"
+#include "game/game.hpp"
 
 static phmap::flat_hash_map<Position, std::shared_ptr<PositionSpectator>, Position::Hasher> spectators;
 
