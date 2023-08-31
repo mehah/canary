@@ -26,28 +26,23 @@
 StaticTile real_nullptr_tile(0xFFFF, 0xFFFF, 0xFF);
 Tile &Tile::nullptr_tile = real_nullptr_tile;
 
-std::vector<SpectatorsPtr> getSpectators(const Position &pos) {
-	const auto leaf = g_game().map.getQTNode(pos.x, pos.y);
+std::vector<SpectatorsPtr> Tile::getWatchmen() {
+	const auto leaf = g_game().map.getQTNode(getPosition().x, getPosition().y);
 	if (!leaf) {
 		return {};
 	}
 
-	const auto &floor = leaf->getFloor(pos.z);
+	const auto &floor = leaf->getFloor(getPosition().z);
 	if (!floor) {
 		return {};
 	}
 
-	const auto &spec = floor->getSpectators(pos.x, pos.y);
+	const auto &spec = floor->getSpectators(getPosition().x, getPosition().y);
 	if (!spec) {
 		return {};
 	}
 
-	const auto &specs = spec->getSpectators();
-	if (spec->getSpectators().empty()) {
-		SpectatorsCache::get(pos); // Create Spectators
-	}
-
-	return spec->getSpectators();
+	return spec->getWatchmen();
 }
 
 bool Tile::hasProperty(ItemProperty prop) const {
@@ -388,8 +383,7 @@ void Tile::onAddTileItem(Item* item) {
 		spectator->onAddTileItem(this, cylinderMapPos);
 	}
 
-	if ((!hasFlag(TILESTATE_PROTECTIONZONE) || g_configManager().getBoolean(CLEAN_PROTECTION_ZONES))
-		&& item->isCleanable()) {
+	if ((!hasFlag(TILESTATE_PROTECTIONZONE) || g_configManager().getBoolean(CLEAN_PROTECTION_ZONES)) && item->isCleanable()) {
 		if (!this->getHouse()) {
 			g_game().addTileToClean(this);
 		}
@@ -958,7 +952,7 @@ void Tile::addThing(int32_t, Thing* thing) {
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
 
-		for (auto &spec : getSpectators(getPosition())) {
+		for (auto &spec : getWatchmen()) {
 			spec->addCreature(creature);
 		}
 	} else {
@@ -1161,7 +1155,7 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 			if (it != creatures->end()) {
 				creatures->erase(it);
 
-				for (auto &spec : getSpectators(getPosition())) {
+				for (auto &spec : getWatchmen()) {
 					spec->removeCreature(creature);
 				}
 			}
@@ -1565,7 +1559,7 @@ void Tile::internalAddThing(uint32_t, Thing* thing) {
 	if (creature) {
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
-		for (auto &spec : getSpectators(getPosition())) {
+		for (auto &spec : getWatchmen()) {
 			spec->addCreature(creature);
 		}
 	} else {

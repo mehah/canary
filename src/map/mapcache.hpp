@@ -126,18 +126,18 @@ struct Floor {
 		std::get<1>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]) = newTile;
 	}
 
-	const std::unique_ptr<std::vector<SpectatorsPtr>> &getSpectators(uint16_t x, uint16_t y) const {
+	SpectatorsPtr getSpectators(uint16_t x, uint16_t y) const {
 		return std::get<2>(tiles[x & FLOOR_MASK][y & FLOOR_MASK]);
 	}
 
-	const std::unique_ptr<std::vector<SpectatorsPtr>> &getOrCreateSpectators(uint16_t x, uint16_t y);
+	SpectatorsPtr getOrCreateSpectators(uint16_t x, uint16_t y);
 
 	uint8_t getZ() const {
 		return z;
 	}
 
 private:
-	std::tuple<TilePtr, BasicTilePtr, std::unique_ptr<std::vector<SpectatorsPtr>>> tiles[FLOOR_SIZE][FLOOR_SIZE] = {};
+	std::tuple<TilePtr, BasicTilePtr, SpectatorsPtr> tiles[FLOOR_SIZE][FLOOR_SIZE] = {};
 	uint8_t z { 0 };
 };
 

@@ -282,8 +282,6 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 	Position oldPos = oldTile.getPosition();
 	Position newPos = newTile.getPosition();
 
-	const auto teste = getTile(oldPos);
-
 	auto fromZones = oldTile.getZones();
 	auto toZones = newTile.getZones();
 	if (auto ret = g_game().beforeCreatureZoneChange(&creature, fromZones, toZones); ret != RETURNVALUE_NOERROR) {

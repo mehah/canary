@@ -33,6 +33,9 @@ public:
 
 	void addCreature(Creature* creature);
 	void removeCreature(Creature* creature);
+	std::vector<SpectatorsPtr> getWatchmen() const {
+		return watchmen;
+	}
 
 private:
 	struct Floor {
@@ -44,6 +47,8 @@ private:
 
 	Floor currentFloor;
 	Floor multiFloor;
+
+	std::vector<SpectatorsPtr> watchmen;
 
 	friend class SpectatorsCache;
 };

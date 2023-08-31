@@ -142,8 +142,10 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 		return {};
 	}
 
-	if (const auto &specs = floor->getSpectators(centerPos.x, centerPos.x)) {
-		return (*specs.get())[0]->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
+	if (const auto &spec = floor->getSpectators(centerPos.x, centerPos.x)) {
+		if (spec->position == centerPos) {
+			return spec->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
+		}
 	}
 
 	const int_fast32_t minY = centerPos.y - MAP_MAX_VIEW_PORT_Y;
@@ -152,8 +154,8 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 	const int_fast32_t maxX = centerPos.x + MAP_MAX_VIEW_PORT_X;
 
 	const auto &[minZ, maxZ] = getZMinMaxRange(centerPos.z, true);
-	const auto &specs = floor->getOrCreateSpectators(centerPos.x, centerPos.x);
-	const auto &spec = (*specs)[0];
+	const auto &spec = floor->getOrCreateSpectators(centerPos.x, centerPos.y);
+	spec->position = centerPos;
 
 	for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
 		int8_t offset = nz - centerPos.z;
@@ -169,7 +171,7 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 					continue;
 				}
 
-				bool addSpec = specFloor->getTileCache(nx, ny) != nullptr;
+				bool watching = specFloor->getTileCache(nx, ny) != nullptr;
 				if (const auto &tile = specFloor->getTile(nx, ny)) {
 					const auto &creatures = tile->getCreatures();
 
@@ -181,11 +183,11 @@ std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool mult
 						spec->addCreature(creature);
 					}
 
-					addSpec = true;
+					watching = true;
 				}
 
-				if (addSpec && centerPos != Position(nx, ny, nz)) {
-					specs->emplace_back(specFloor->getOrCreateSpectators(nx, ny));
+				if (watching) {
+					specFloor->getOrCreateSpectators(0, 0)->watchmen.emplace_back(spec);
 				}
 			}
 		}

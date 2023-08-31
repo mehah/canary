@@ -26,6 +26,7 @@ class Spectators;
 
 using CreatureVector = std::vector<Creature*>;
 using ItemVector = std::vector<Item*>;
+using SpectatorsPtr = std::shared_ptr<Spectators>;
 
 class TileItemVector : private ItemVector {
 public:
@@ -256,6 +257,7 @@ private:
 	void resetTileFlags(const Item* item);
 	bool hasHarmfulField() const;
 	ReturnValue checkNpcCanWalkIntoTile() const;
+	std::vector<SpectatorsPtr> getWatchmen();
 
 protected:
 	Item* ground = nullptr;
