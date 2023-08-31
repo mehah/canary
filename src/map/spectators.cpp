@@ -11,7 +11,7 @@
 #include "spectators.hpp"
 #include "game/game.hpp"
 
-static phmap::flat_hash_map<Position, std::shared_ptr<PositionSpectator>> spectators;
+static phmap::flat_hash_map<Position, std::shared_ptr<Spectators>> spectators;
 
 std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 	uint8_t minRangeZ = z;
@@ -37,10 +37,10 @@ std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
 	return std::make_pair(minRangeZ, maxRangeZ);
 }
 
-void MultiSpectatorArea::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+void SpectatorsGroup::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	update = true;
 
-	const auto &specs = Spectators::get(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
+	const auto &specs = SpectatorsCache::get(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
 	if (creatures.empty()) {
 		creatures = specs;
 	} else {
@@ -48,7 +48,7 @@ void MultiSpectatorArea::find(const Position &centerPos, bool multifloor, bool o
 	}
 }
 
-std::vector<Creature*> MultiSpectatorArea::get() {
+std::vector<Creature*> SpectatorsGroup::get() {
 	if (update) {
 		update = false;
 		std::sort(creatures.begin(), creatures.end());
@@ -58,7 +58,7 @@ std::vector<Creature*> MultiSpectatorArea::get() {
 	return creatures;
 }
 
-std::vector<Creature*> PositionSpectator::get(bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+std::vector<Creature*> Spectators::get(bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	const auto &floor = multifloor ? multiFloor : currentFloor;
 	const auto &creatures = onlyPlayers ? floor.players : floor.creatures;
 
@@ -83,7 +83,7 @@ std::vector<Creature*> PositionSpectator::get(bool multifloor, bool onlyPlayers,
 
 	return newCreatures;
 }
-void PositionSpectator::addCreature(Creature* creature) {
+void Spectators::addCreature(Creature* creature) {
 	if (!creature) {
 		return;
 	}
@@ -101,7 +101,7 @@ void PositionSpectator::addCreature(Creature* creature) {
 	}
 }
 
-void PositionSpectator::removeCreature(Creature* creature) {
+void Spectators::removeCreature(Creature* creature) {
 	if (!creature) {
 		return;
 	}
@@ -133,7 +133,7 @@ void PositionSpectator::removeCreature(Creature* creature) {
 	}
 }
 
-std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+std::vector<Creature*> SpectatorsCache::get(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	auto it = spectators.find(centerPos);
 	if (it != spectators.end()) {
 		return it->second->get(multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY);
@@ -146,7 +146,7 @@ std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloo
 
 	const auto &[minZ, maxZ] = getZMinMaxRange(centerPos.z, true);
 
-	const auto &spec = std::make_shared<PositionSpectator>(centerPos);
+	const auto &spec = std::make_shared<Spectators>(centerPos);
 	spectators.emplace(centerPos, spec);
 
 	for (int_fast32_t nz = minZ; nz <= maxZ; ++nz) {
@@ -163,7 +163,7 @@ std::vector<Creature*> Spectators::get(const Position &centerPos, bool multifloo
 						spec->addCreature(creature);
 					}
 
-					tile->positionSpectators.emplace_back(spec);
+					tile->spectators.emplace_back(spec);
 				}
 			}
 		}

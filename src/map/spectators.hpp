@@ -14,7 +14,7 @@
 class Creature;
 struct Position;
 
-class MultiSpectatorArea {
+class SpectatorsGroup {
 public:
 	void find(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
 	std::vector<Creature*> get();
@@ -24,9 +24,9 @@ private:
 	bool update = false;
 };
 
-class PositionSpectator {
+class Spectators {
 public:
-	PositionSpectator(const Position &pos) :
+	Spectators(const Position &pos) :
 		position(pos) { }
 
 	std::vector<Creature*> get(bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
@@ -46,9 +46,7 @@ private:
 	Floor multiFloor;
 };
 
-class Spectators {
+class SpectatorsCache {
 public:
 	static std::vector<Creature*> get(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
-
-private:
 };

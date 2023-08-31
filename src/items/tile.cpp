@@ -937,7 +937,7 @@ void Tile::addThing(int32_t, Thing* thing) {
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
 
-		for (auto &spec : positionSpectators) {
+		for (auto &spec : spectators) {
 			spec->addCreature(creature);
 		}
 	} else {
@@ -1141,7 +1141,7 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 				g_game().map.clearSpectatorCache();
 				creatures->erase(it);
 
-				for (auto &spec : positionSpectators) {
+				for (auto &spec : spectators) {
 					spec->removeCreature(creature);
 				}
 			}
@@ -1552,7 +1552,7 @@ void Tile::internalAddThing(uint32_t, Thing* thing) {
 		g_game().map.clearSpectatorCache();
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
-		for (auto &spec : positionSpectators) {
+		for (auto &spec : spectators) {
 			spec->addCreature(creature);
 		}
 	} else {

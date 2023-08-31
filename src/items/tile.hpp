@@ -22,7 +22,7 @@ class MagicField;
 class BedItem;
 class House;
 class Zone;
-class PositionSpectator;
+class Spectators;
 
 using CreatureVector = std::vector<Creature*>;
 using ItemVector = std::vector<Item*>;
@@ -257,9 +257,9 @@ private:
 	void resetTileFlags(const Item* item);
 	bool hasHarmfulField() const;
 	ReturnValue checkNpcCanWalkIntoTile() const;
-	std::vector<std::shared_ptr<PositionSpectator>> positionSpectators;
+	std::vector<std::shared_ptr<Spectators>> spectators;
 
-	friend class Spectators;
+	friend class SpectatorsCache;
 
 protected:
 	Item* ground = nullptr;
