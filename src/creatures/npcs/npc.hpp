@@ -17,6 +17,7 @@
 class Creature;
 class Game;
 class SpawnNpc;
+class Spectators;
 
 class Npc final : public Creature {
 public:
@@ -190,7 +191,7 @@ private:
 
 	bool ignoreHeight;
 
-	SpectatorHashSet playerSpectators;
+	Spectators playerSpectators;
 	Position masterPos;
 
 	friend class LuaScriptInterface;

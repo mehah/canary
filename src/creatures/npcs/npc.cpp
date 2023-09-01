@@ -16,6 +16,7 @@
 #include "lua/callbacks/creaturecallback.hpp"
 #include "game/scheduling/dispatcher.hpp"
 #include "game/scheduling/scheduler.hpp"
+#include "map/spectators.hpp"
 
 int32_t Npc::despawnRange;
 int32_t Npc::despawnRadius;
@@ -535,10 +536,9 @@ void Npc::onPlacedCreature() {
 }
 
 void Npc::loadPlayerSpectators() {
-	SpectatorHashSet spec;
-	g_game().map.getSpectators(spec, position, true, true);
+	auto spec = Spectators().find<Player>(position, true);
 	for (auto creature : spec) {
-		if (creature->getPlayer() || creature->getPlayer()->hasFlag(PlayerFlags_t::IgnoredByNpcs)) {
+		if (creature->getPlayer()->hasFlag(PlayerFlags_t::IgnoredByNpcs)) {
 			playerSpectators.insert(creature);
 		}
 	}

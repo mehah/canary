@@ -41,6 +41,22 @@ public:
 
 	bool erase(const Creature* creature);
 
+	void insert(const Creature* creature) {
+#ifdef SPECTATOR_USE_HASH_SET
+		creatures.emplace(creature);
+#else
+		creatures.emplace_back(creature);
+#endif
+	}
+
+	bool empty() const {
+		return creatures.empty();
+	}
+
+	size_t size() const {
+		return creatures.size();
+	}
+
 	auto begin() {
 		update();
 		return creatures.begin();
