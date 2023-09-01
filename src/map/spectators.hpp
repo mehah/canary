@@ -14,16 +14,33 @@
 class Creature;
 struct Position;
 
-using CreatureVector = std::vector<Creature*>;
+#define SPECTATOR_USE_HASH_SET 1
+
+#ifdef SPECTATOR_USE_HASH_SET
+using SpectatorList = phmap::flat_hash_set<Creature*>;
+#else
+using SpectatorList = std::vector<Creature*>;
+#endif
 
 class Spectators {
 public:
-	static void clear();
-	static std::vector<Creature*> get(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
+	static void clearCache();
 	Spectators find(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
-	CreatureVector get();
+
+	bool erase(const Creature* creature);
+
+	auto begin() {
+		update();
+		return creatures.begin();
+	}
+
+	auto end() {
+		return creatures.end();
+	}
 
 private:
-	CreatureVector creatures;
-	bool update = false;
+	void update();
+
+	SpectatorList creatures;
+	bool needUpdate = false;
 };

@@ -292,13 +292,18 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 
 	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
 
-	const auto &spectators = Spectators()
-								 .find(oldPos, true)
-								 .find(newPos, true)
-								 .get();
+	auto spectators = Spectators()
+						  .find(oldPos, true)
+						  .find(newPos, true);
+
+	for (const auto &spec : Spectators()
+								.find(oldPos, true)
+								.find(newPos, true)) {
+		g_logger().info(spec->getName());
+	}
 
 	std::vector<int32_t> oldStackPosVector;
-	for (Creature* spectator : spectators) {
+	for (auto spectator : spectators) {
 		if (Player* tmpPlayer = spectator->getPlayer()) {
 			if (tmpPlayer->canSeeCreature(&creature)) {
 				oldStackPosVector.push_back(oldTile.getClientIndexOfCreature(tmpPlayer, &creature));

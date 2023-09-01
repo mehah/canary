@@ -10,26 +10,24 @@
 #include "spectators.hpp"
 #include "game/game.hpp"
 
-phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> spectatorCache;
-phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> playersSpectatorCache;
+phmap::flat_hash_map<Position, std::pair<SpectatorList, SpectatorList>> spectatorCache;
+phmap::flat_hash_map<Position, std::pair<SpectatorList, SpectatorList>> playersSpectatorCache;
 
-void Spectators::clear() {
+void Spectators::clearCache() {
 	spectatorCache.clear();
 	playersSpectatorCache.clear();
 }
 
-std::vector<Creature*> Spectators::get() {
-	if (update) {
-		update = false;
-		std::sort(creatures.begin(), creatures.end());
-		creatures.erase(std::unique(creatures.begin(), creatures.end()), creatures.end());
+void Spectators::update() {
+	if (!needUpdate) {
+		return;
 	}
 
-	return creatures;
-}
-
-std::vector<Creature*> get(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
-	return Spectators().find(centerPos, multifloor, onlyPlayers, minRangeX, maxRangeX, minRangeY, maxRangeY).get();
+	needUpdate = false;
+#ifndef SPECTATOR_USE_HASH_SET
+	std::sort(creatures.begin(), creatures.end());
+	creatures.erase(std::unique(creatures.begin(), creatures.end()), creatures.end());
+#endif
 }
 
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
@@ -40,25 +38,33 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 	minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
 	maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
 
-		const auto& it = hashmap.find(centerPos);
-		if (it != hashmap.end()) {
-			const auto &list = multifloor ? it->second.first : it->second.second;
+	const auto &it = hashmap.find(centerPos);
+	if (it != hashmap.end()) {
+		const auto &list = multifloor ? it->second.first : it->second.second;
 
-			if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y)
-				creatures.insert(creatures.end(), list.begin(), list.end());
-			else { 
-				for (const auto creature : list) {
-					if (centerPos.x - creature->getPosition().x >= minRangeX
-						&& centerPos.y - creature->getPosition().y >= minRangeY
-						&& centerPos.x - creature->getPosition().x <= maxRangeX
-						&& centerPos.y - creature->getPosition().y <= maxRangeY) {
-						creatures.emplace_back(creature);
-					}
+		if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
+#ifdef SPECTATOR_USE_HASH_SET
+			creatures.insert(list.begin(), list.end());
+#else
+			creatures.insert(creatures.end(), list.begin(), list.end());
+#endif
+		} else {
+			for (const auto creature : list) {
+				if (centerPos.x - creature->getPosition().x >= minRangeX
+					&& centerPos.y - creature->getPosition().y >= minRangeY
+					&& centerPos.x - creature->getPosition().x <= maxRangeX
+					&& centerPos.y - creature->getPosition().y <= maxRangeY) {
+#ifdef SPECTATOR_USE_HASH_SET
+					creatures.emplace(creature);
+#else
+					creatures.emplace_back(creature);
+#endif
 				}
 			}
-
-			return *this;
 		}
+
+		return *this;
+	}
 
 	uint8_t minRangeZ = centerPos.z;
 	uint8_t maxRangeZ = centerPos.z;
@@ -80,7 +86,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 	}
 
 	if (!creatures.empty()) {
-		update = true;
+		needUpdate = true;
 	}
 
 	const int_fast32_t min_y = centerPos.y + minRangeY;
@@ -124,7 +130,11 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 						continue;
 					}
 
+#ifdef SPECTATOR_USE_HASH_SET
+					list.emplace(creature);
+#else
 					list.emplace_back(creature);
+#endif
 				}
 				leafE = leafE->leafE;
 			} else {
@@ -139,7 +149,24 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 		}
 	}
 
+#ifdef SPECTATOR_USE_HASH_SET
+	creatures.insert(list.begin(), list.end());
+#else
 	creatures.insert(creatures.end(), list.begin(), list.end());
+#endif
 
 	return *this;
+}
+
+bool Spectators::erase(const Creature* creature) {
+#ifdef SPECTATOR_USE_HASH_SET
+	return creatures.erase(creature) > 0;
+#else
+	const auto &it = std::find(creatures.begin(), creatures.end(), creature);
+	if (it != creatures.end()) {
+		creatures.erase(it);
+		return true;
+	}
+	return false;
+#endif
 }
