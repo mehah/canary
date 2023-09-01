@@ -178,7 +178,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 	return *this;
 }
 
-void Spectators::insert(const Creature* creature) {
+void Spectators::insert(Creature* creature) {
 #ifdef SPECTATOR_USE_HASH_SET
 	creatures.emplace(creature);
 #else
@@ -186,7 +186,7 @@ void Spectators::insert(const Creature* creature) {
 #endif
 }
 
-bool Spectators::contains(const Creature* creature) {
+bool Spectators::contains(const Creature* creature) const {
 #ifdef SPECTATOR_USE_HASH_SET
 	return creatures.contains(creature);
 #else
