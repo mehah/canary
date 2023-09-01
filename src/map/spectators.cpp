@@ -13,30 +13,6 @@
 phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> spectatorCache;
 phmap::flat_hash_map<Position, std::pair<CreatureVector, CreatureVector>> playersSpectatorCache;
 
-std::pair<uint8_t, uint8_t> getZMinMaxRange(uint8_t z, bool multiFloor) {
-	uint8_t minRangeZ = z;
-	uint8_t maxRangeZ = z;
-
-	if (multiFloor) {
-		// underground (8->15)
-		if (z > MAP_INIT_SURFACE_LAYER) {
-			minRangeZ = std::max<int32_t>(z - MAP_LAYER_VIEW_LIMIT, 0);
-			maxRangeZ = std::min<int32_t>(z + MAP_LAYER_VIEW_LIMIT, MAP_MAX_LAYERS - 1);
-		} else if (z == MAP_INIT_SURFACE_LAYER - 1) {
-			minRangeZ = 0;
-			maxRangeZ = (MAP_INIT_SURFACE_LAYER - 1) + MAP_LAYER_VIEW_LIMIT;
-		} else if (z == MAP_INIT_SURFACE_LAYER) {
-			minRangeZ = 0;
-			maxRangeZ = MAP_INIT_SURFACE_LAYER + MAP_LAYER_VIEW_LIMIT;
-		} else {
-			minRangeZ = 0;
-			maxRangeZ = MAP_INIT_SURFACE_LAYER;
-		}
-	}
-
-	return std::make_pair(minRangeZ, maxRangeZ);
-}
-
 void Spectators::clear() {
 	spectatorCache.clear();
 	playersSpectatorCache.clear();
@@ -59,6 +35,11 @@ std::vector<Creature*> get(const Position &centerPos, bool multifloor, bool only
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
+		minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
+		maxRangeX = (maxRangeX == 0 ? MAP_MAX_VIEW_PORT_X : maxRangeX);
+		minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
+		maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
+
 	if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
 		auto it = hashmap.find(centerPos);
 		if (it != hashmap.end()) {
@@ -68,34 +49,46 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 		}
 	}
 
-	const auto &[minRangeZ, maxRangeZ] = getZMinMaxRange(centerPos.z, multifloor);
+	uint8_t minRangeZ = centerPos.z;
+	uint8_t maxRangeZ = centerPos.z;
+
+	if (multifloor) {
+		if (centerPos.z > MAP_INIT_SURFACE_LAYER) {
+			minRangeZ = std::max<int32_t>(centerPos.z - MAP_LAYER_VIEW_LIMIT, 0);
+			maxRangeZ = std::min<int32_t>(centerPos.z + MAP_LAYER_VIEW_LIMIT, MAP_MAX_LAYERS - 1);
+		} else if (centerPos.z == MAP_INIT_SURFACE_LAYER - 1) {
+			minRangeZ = 0;
+			maxRangeZ = (MAP_INIT_SURFACE_LAYER - 1) + MAP_LAYER_VIEW_LIMIT;
+		} else if (centerPos.z == MAP_INIT_SURFACE_LAYER) {
+			minRangeZ = 0;
+			maxRangeZ = MAP_INIT_SURFACE_LAYER + MAP_LAYER_VIEW_LIMIT;
+		} else {
+			minRangeZ = 0;
+			maxRangeZ = MAP_INIT_SURFACE_LAYER;
+		}
+	}
 
 	if (!creatures.empty()) {
 		update = true;
 	}
 
-	minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
-	maxRangeX = (maxRangeX == 0 ? MAP_MAX_VIEW_PORT_X : maxRangeX);
-	minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
-	maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
+	const int_fast32_t min_y = centerPos.y + minRangeY;
+	const int_fast32_t min_x = centerPos.x + minRangeX;
+	const int_fast32_t max_y = centerPos.y + maxRangeY;
+	const int_fast32_t max_x = centerPos.x + maxRangeX;
 
-	int_fast32_t min_y = centerPos.y + minRangeY;
-	int_fast32_t min_x = centerPos.x + minRangeX;
-	int_fast32_t max_y = centerPos.y + maxRangeY;
-	int_fast32_t max_x = centerPos.x + maxRangeX;
+	const int32_t minoffset = centerPos.getZ() - maxRangeZ;
+	const uint16_t x1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_x + minoffset)));
+	const uint16_t y1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_y + minoffset)));
 
-	int32_t minoffset = centerPos.getZ() - maxRangeZ;
-	uint16_t x1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_x + minoffset)));
-	uint16_t y1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_y + minoffset)));
+const int32_t maxoffset = centerPos.getZ() - minRangeZ;
+	const uint16_t x2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_x + maxoffset)));
+const uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_y + maxoffset)));
 
-	int32_t maxoffset = centerPos.getZ() - minRangeZ;
-	uint16_t x2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_x + maxoffset)));
-	uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_y + maxoffset)));
-
-	int32_t startx1 = x1 - (x1 % FLOOR_SIZE);
-	int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
-	int32_t endx2 = x2 - (x2 % FLOOR_SIZE);
-	int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
+	const int32_t startx1 = x1 - (x1 % FLOOR_SIZE);
+const int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
+	const int32_t endx2 = x2 - (x2 % FLOOR_SIZE);
+const int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
 
 	const auto startLeaf = g_game().map.getQTNode(startx1, starty1);
 	const QTreeLeafNode* leafS = startLeaf;

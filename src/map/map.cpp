@@ -297,10 +297,6 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 								 .find(newPos, true)
 								 .get();
 
-	SpectatorHashSet test34;
-	getSpectators(test34, oldPos, true);
-	getSpectators(test34, newPos, true);
-
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {
 		if (Player* tmpPlayer = spectator->getPlayer()) {
