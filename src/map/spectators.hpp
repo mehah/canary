@@ -10,8 +10,15 @@
 #pragma once
 
 #include "pch.hpp"
+#include <concepts>
+#include <utility>
+
+template <class Type, class BaseClass>
+concept CheckType = std::is_base_of<BaseClass, Type>::value;
 
 class Creature;
+class Player;
+
 struct Position;
 
 // #define SPECTATOR_USE_HASH_SET
@@ -25,7 +32,12 @@ using SpectatorList = std::vector<Creature*>;
 class Spectators {
 public:
 	static void clearCache();
-	Spectators find(const Position &centerPos, bool multifloor = false, bool onlyPlayers = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
+
+	template <typename T, typename std::enable_if<std::is_same<Creature, T>::value || std::is_same<Player, T>::value>::type* = nullptr>
+	Spectators find(const Position &centerPos, bool multifloor = false, int32_t minRangeX = 0, int32_t maxRangeX = 0, int32_t minRangeY = 0, int32_t maxRangeY = 0);
+
+	template <typename T, typename std::enable_if<std::is_base_of<Creature, T>::value>::type* = nullptr>
+	Spectators filter();
 
 	bool erase(const Creature* creature);
 

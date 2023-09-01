@@ -293,12 +293,13 @@ void Map::moveCreature(Creature &creature, Tile &newTile, bool forceTeleport /* 
 	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
 
 	auto spectators = Spectators()
-						  .find(oldPos, true)
-						  .find(newPos, true);
+						  .find<Player>(oldPos, true)
+						  .find<Creature>(newPos, true);
 
 	for (const auto &spec : Spectators()
-								.find(oldPos, true)
-								.find(newPos, true)) {
+								.find<Player>(oldPos, true)
+								.find<Creature>(newPos, true)
+								.filter<Player>()) {
 		g_logger().info(spec->getName());
 	}
 

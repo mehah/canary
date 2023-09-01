@@ -30,10 +30,30 @@ void Spectators::update() {
 #endif
 }
 
-Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+template <typename T, typename std::enable_if<std::is_base_of<Creature, T>::value>::type*>
+Spectators Spectators::filter() {
+	update();
+	auto specs = Spectators();
+	for (const auto &c : creatures) {
+		if (std::is_same_v<T, Player> && c->getPlayer() || std::is_same_v<T, Monster> && c->getMonster() || std::is_same_v<T, Npc> && c->getNpc()) {
+#ifdef SPECTATOR_USE_HASH_SET
+			specs.creatures.emplace(c);
+#else
+			specs.creatures.emplace_back(c);
+#endif
+		}
+	}
+
+	return specs;
+}
+
+template <typename T, typename std::enable_if<std::is_same<Creature, T>::value || std::is_same<Player, T>::value>::type*>
+Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	if (!creatures.empty()) {
 		needUpdate = true;
 	}
+
+	const bool onlyPlayers = std::is_same_v<T, Player>;
 
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
