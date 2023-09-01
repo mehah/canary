@@ -24,36 +24,16 @@ void Spectators::update() {
 	}
 
 	needUpdate = false;
-#ifndef SPECTATOR_USE_HASH_SET
+#ifndef SPECTATORS_USE_HASHSET
 	std::sort(creatures.begin(), creatures.end());
 	creatures.erase(std::unique(creatures.begin(), creatures.end()), creatures.end());
 #endif
 }
 
-template <typename T, typename std::enable_if<std::is_base_of<Creature, T>::value>::type*>
-Spectators Spectators::filter() {
-	update();
-	auto specs = Spectators();
-	for (const auto &c : creatures) {
-		if (std::is_same_v<T, Player> && c->getPlayer() || std::is_same_v<T, Monster> && c->getMonster() || std::is_same_v<T, Npc> && c->getNpc()) {
-#ifdef SPECTATOR_USE_HASH_SET
-			specs.creatures.emplace(c);
-#else
-			specs.creatures.emplace_back(c);
-#endif
-		}
-	}
-
-	return specs;
-}
-
-template <typename T, typename std::enable_if<std::is_same<Creature, T>::value || std::is_same<Player, T>::value>::type*>
-Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	if (!creatures.empty()) {
 		needUpdate = true;
 	}
-
-	const bool onlyPlayers = std::is_same_v<T, Player>;
 
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
@@ -67,7 +47,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 		const auto &list = multifloor ? it->second.first : it->second.second;
 
 		if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 			creatures.insert(list.begin(), list.end());
 #else
 			creatures.insert(creatures.end(), list.begin(), list.end());
@@ -78,7 +58,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 					&& centerPos.y - creature->getPosition().y >= minRangeY
 					&& centerPos.x - creature->getPosition().x <= maxRangeX
 					&& centerPos.y - creature->getPosition().y <= maxRangeY) {
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 					creatures.emplace(creature);
 #else
 					creatures.emplace_back(creature);
@@ -150,7 +130,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 						continue;
 					}
 
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 					list.emplace(creature);
 #else
 					list.emplace_back(creature);
@@ -169,7 +149,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 		}
 	}
 
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 	creatures.insert(list.begin(), list.end());
 #else
 	creatures.insert(creatures.end(), list.begin(), list.end());
@@ -179,7 +159,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 }
 
 void Spectators::insert(Creature* creature) {
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 	creatures.emplace(creature);
 #else
 	creatures.emplace_back(creature);
@@ -187,25 +167,16 @@ void Spectators::insert(Creature* creature) {
 }
 
 bool Spectators::contains(const Creature* creature) const {
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 	return creatures.contains(creature);
 #else
 	return std::find(creatures.begin(), creatures.end(), creature) != creatures.end();
 #endif
 }
 
-template <class F>
-bool Spectators::erase_if(F fnc) {
-#ifdef SPECTATOR_USE_HASH_SET
-	return phmap::erase_if(creatures, std::move(fnc)) > 0;
-#else
-	return std::erase_if(creatures, std::move(fnc)) > 0;
-#endif
-}
-
 bool Spectators::erase(const Creature* creature) {
 	update();
-#ifdef SPECTATOR_USE_HASH_SET
+#ifdef SPECTATORS_USE_HASHSET
 	return creatures.erase(creature) > 0;
 #else
 	const auto &it = std::find(creatures.begin(), creatures.end(), creature);
