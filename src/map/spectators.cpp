@@ -31,6 +31,10 @@ void Spectators::update() {
 }
 
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
+	if (!creatures.empty()) {
+		needUpdate = true;
+	}
+
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
 	minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
@@ -85,10 +89,6 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 		}
 	}
 
-	if (!creatures.empty()) {
-		needUpdate = true;
-	}
-
 	const int_fast32_t min_y = centerPos.y + minRangeY;
 	const int_fast32_t min_x = centerPos.x + minRangeX;
 	const int_fast32_t max_y = centerPos.y + maxRangeY;
@@ -111,7 +111,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 	const QTreeLeafNode* leafS = startLeaf;
 	const QTreeLeafNode* leafE;
 
-	auto &specCache = spectatorCache.try_emplace(centerPos).first->second;
+	auto &specCache = hashmap.try_emplace(centerPos).first->second;
 	auto &list = multifloor ? specCache.first : specCache.second;
 
 	for (int_fast32_t ny = starty1; ny <= endy2; ny += FLOOR_SIZE) {
