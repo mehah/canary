@@ -13,15 +13,11 @@
 #include <concepts>
 #include <utility>
 
-template <class Type, class BaseClass>
-concept CheckType = std::is_base_of<BaseClass, Type>::value;
-
 class Creature;
 class Player;
-
 struct Position;
 
-#define SPECTATORS_USE_HASHSET
+// #define SPECTATORS_USE_HASHSET
 
 #ifdef SPECTATORS_USE_HASHSET
 using SpectatorList = phmap::flat_hash_set<Creature*>;
