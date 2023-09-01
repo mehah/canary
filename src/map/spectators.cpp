@@ -178,6 +178,22 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 	return *this;
 }
 
+void Spectators::insert(const Creature* creature) {
+#ifdef SPECTATOR_USE_HASH_SET
+	creatures.emplace(creature);
+#else
+	creatures.emplace_back(creature);
+#endif
+}
+
+bool Spectators::contains(const Creature* creature) {
+#ifdef SPECTATOR_USE_HASH_SET
+	return creatures.contains(creature);
+#else
+	return std::find(creatures.begin(), creatures.end(), creature) != creatures.end();
+#endif
+}
+
 template <class F>
 bool Spectators::erase_if(F fnc) {
 #ifdef SPECTATOR_USE_HASH_SET

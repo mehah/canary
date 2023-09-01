@@ -39,18 +39,14 @@ public:
 	template <typename T, typename std::enable_if<std::is_base_of<Creature, T>::value>::type* = nullptr>
 	Spectators filter();
 
+	bool contains(const Creature* creature);
+
 	bool erase(const Creature* creature);
 
 	template <class F>
 	bool erase_if(F fnc);
 
-	void insert(const Creature* creature) {
-#ifdef SPECTATOR_USE_HASH_SET
-		creatures.emplace(creature);
-#else
-		creatures.emplace_back(creature);
-#endif
-	}
+	void insert(const Creature* creature);
 
 	bool empty() const {
 		return creatures.empty();

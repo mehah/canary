@@ -16,7 +16,6 @@
 #include "lua/callbacks/creaturecallback.hpp"
 #include "game/scheduling/dispatcher.hpp"
 #include "game/scheduling/scheduler.hpp"
-#include "map/spectators.hpp"
 
 int32_t Npc::despawnRange;
 int32_t Npc::despawnRadius;
