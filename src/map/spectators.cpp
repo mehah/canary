@@ -40,14 +40,25 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 		minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
 		maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
 
-	if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
-		auto it = hashmap.find(centerPos);
+		const auto& it = hashmap.find(centerPos);
 		if (it != hashmap.end()) {
 			const auto &list = multifloor ? it->second.first : it->second.second;
-			creatures.insert(creatures.end(), list.begin(), list.end());
+
+			if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y)
+				creatures.insert(creatures.end(), list.begin(), list.end());
+			else { 
+				for (const auto creature : list) {
+					if (centerPos.x - creature->getPosition().x >= minRangeX
+						&& centerPos.y - creature->getPosition().y >= minRangeY
+						&& centerPos.x - creature->getPosition().x <= maxRangeX
+						&& centerPos.y - creature->getPosition().y <= maxRangeY) {
+						creatures.emplace_back(creature);
+					}
+				}
+			}
+
 			return *this;
 		}
-	}
 
 	uint8_t minRangeZ = centerPos.z;
 	uint8_t maxRangeZ = centerPos.z;
@@ -102,8 +113,8 @@ const int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
 		for (int_fast32_t nx = startx1; nx <= endx2; nx += FLOOR_SIZE) {
 			if (leafE) {
 				const auto &node_list = (onlyPlayers ? leafE->player_list : leafE->creature_list);
-				for (Creature* creature : node_list) {
-					const Position &cpos = creature->getPosition();
+				for (const auto creature : node_list) {
+					const auto &cpos = creature->getPosition();
 					if (minRangeZ > cpos.z || maxRangeZ < cpos.z) {
 						continue;
 					}
