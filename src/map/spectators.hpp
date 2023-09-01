@@ -41,6 +41,9 @@ public:
 
 	bool erase(const Creature* creature);
 
+	template <class F>
+	bool erase_if(F fnc);
+
 	void insert(const Creature* creature) {
 #ifdef SPECTATOR_USE_HASH_SET
 		creatures.emplace(creature);

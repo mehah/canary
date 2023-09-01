@@ -178,6 +178,15 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, int32_t 
 	return *this;
 }
 
+template <class F>
+bool erase_if(F fnc) {
+#ifdef SPECTATOR_USE_HASH_SET
+	phmap::erase_if(playerSpectators, std::move(fnc));
+#else
+	std::erase_if(playerSpectators.creatures, std::move(fnc))
+#endif
+}
+
 bool Spectators::erase(const Creature* creature) {
 	update();
 #ifdef SPECTATOR_USE_HASH_SET
