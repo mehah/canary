@@ -1532,7 +1532,7 @@ void Tile::internalAddThing(uint32_t, Thing* thing) {
 
 	Creature* creature = thing->getCreature();
 	if (creature) {
-		g_game().map.clearSpectatorCache();
+		Spectators::clearCache();
 		CreatureVector* creatures = makeCreatures();
 		creatures->insert(creatures->begin(), creature);
 	} else {
