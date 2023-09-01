@@ -35,10 +35,10 @@ std::vector<Creature*> get(const Position &centerPos, bool multifloor, bool only
 Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onlyPlayers, int32_t minRangeX, int32_t maxRangeX, int32_t minRangeY, int32_t maxRangeY) {
 	auto &hashmap = onlyPlayers ? playersSpectatorCache : spectatorCache;
 
-		minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
-		maxRangeX = (maxRangeX == 0 ? MAP_MAX_VIEW_PORT_X : maxRangeX);
-		minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
-		maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
+	minRangeX = (minRangeX == 0 ? -MAP_MAX_VIEW_PORT_X : -minRangeX);
+	maxRangeX = (maxRangeX == 0 ? MAP_MAX_VIEW_PORT_X : maxRangeX);
+	minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
+	maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
 
 	if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
 		auto it = hashmap.find(centerPos);
@@ -81,14 +81,14 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 	const uint16_t x1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_x + minoffset)));
 	const uint16_t y1 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (min_y + minoffset)));
 
-const int32_t maxoffset = centerPos.getZ() - minRangeZ;
+	const int32_t maxoffset = centerPos.getZ() - minRangeZ;
 	const uint16_t x2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_x + maxoffset)));
-const uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_y + maxoffset)));
+	const uint16_t y2 = std::min<uint32_t>(0xFFFF, std::max<int32_t>(0, (max_y + maxoffset)));
 
 	const int32_t startx1 = x1 - (x1 % FLOOR_SIZE);
-const int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
+	const int32_t starty1 = y1 - (y1 % FLOOR_SIZE);
 	const int32_t endx2 = x2 - (x2 % FLOOR_SIZE);
-const int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
+	const int32_t endy2 = y2 - (y2 % FLOOR_SIZE);
 
 	const auto startLeaf = g_game().map.getQTNode(startx1, starty1);
 	const QTreeLeafNode* leafS = startLeaf;
