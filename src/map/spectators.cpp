@@ -40,25 +40,25 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 	minRangeY = (minRangeY == 0 ? -MAP_MAX_VIEW_PORT_Y : -minRangeY);
 	maxRangeY = (maxRangeY == 0 ? MAP_MAX_VIEW_PORT_Y : maxRangeY);
 
-		const auto& it = hashmap.find(centerPos);
-		if (it != hashmap.end()) {
-			const auto &list = multifloor ? it->second.first : it->second.second;
+	const auto &it = hashmap.find(centerPos);
+	if (it != hashmap.end()) {
+		const auto &list = multifloor ? it->second.first : it->second.second;
 
-			if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y)
-				creatures.insert(creatures.end(), list.begin(), list.end());
-			else { 
-				for (const auto creature : list) {
-					if (centerPos.x - creature->getPosition().x >= minRangeX
-						&& centerPos.y - creature->getPosition().y >= minRangeY
-						&& centerPos.x - creature->getPosition().x <= maxRangeX
-						&& centerPos.y - creature->getPosition().y <= maxRangeY) {
-						creatures.emplace_back(creature);
-					}
+		if (minRangeX == -MAP_MAX_VIEW_PORT_X && maxRangeX == MAP_MAX_VIEW_PORT_X && minRangeY == -MAP_MAX_VIEW_PORT_Y && maxRangeY == MAP_MAX_VIEW_PORT_Y) {
+			creatures.insert(creatures.end(), list.begin(), list.end());
+		} else {
+			for (const auto creature : list) {
+				if (centerPos.x - creature->getPosition().x >= minRangeX
+					&& centerPos.y - creature->getPosition().y >= minRangeY
+					&& centerPos.x - creature->getPosition().x <= maxRangeX
+					&& centerPos.y - creature->getPosition().y <= maxRangeY) {
+					creatures.emplace_back(creature);
 				}
 			}
-
-			return *this;
 		}
+
+		return *this;
+	}
 
 	uint8_t minRangeZ = centerPos.z;
 	uint8_t maxRangeZ = centerPos.z;
