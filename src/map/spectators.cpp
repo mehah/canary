@@ -159,6 +159,7 @@ Spectators Spectators::find(const Position &centerPos, bool multifloor, bool onl
 }
 
 bool Spectators::erase(const Creature* creature) {
+	update();
 #ifdef SPECTATOR_USE_HASH_SET
 	return creatures.erase(creature) > 0;
 #else

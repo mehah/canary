@@ -14,7 +14,7 @@
 class Creature;
 struct Position;
 
-#define SPECTATOR_USE_HASH_SET 1
+// #define SPECTATOR_USE_HASH_SET
 
 #ifdef SPECTATOR_USE_HASH_SET
 using SpectatorList = phmap::flat_hash_set<Creature*>;
